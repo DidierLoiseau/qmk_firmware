@@ -3,16 +3,18 @@
 
 #include "quantum.h"
 
-#define UC_OSX 0
-#define UC_LNX 1
-#define UC_WIN 2
-#define UC_BSD 3
+typedef enum unicode_input_mode {
+  UC_OSX,
+  UC_LNX,
+  UC_WIN,
+  UC_BSD,
+} unicode_input_mode_t;
 
 #ifndef UNICODE_TYPE_DELAY
 #define UNICODE_TYPE_DELAY 10
 #endif
 
-void set_unicode_input_mode(uint8_t os_target);
+void set_unicode_input_mode(unicode_input_mode_t os_target);
 uint8_t get_unicode_input_mode(void);
 void unicode_input_start(void);
 void unicode_input_finish(void);

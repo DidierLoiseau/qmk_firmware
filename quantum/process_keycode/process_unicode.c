@@ -1,6 +1,6 @@
 #include "process_unicode.h"
 
-static uint8_t input_mode;
+static unicode_input_mode_t input_mode;
 
 uint16_t hex_to_keycode(uint8_t hex)
 {
@@ -13,7 +13,7 @@ uint16_t hex_to_keycode(uint8_t hex)
   }
 }
 
-void set_unicode_input_mode(uint8_t os_target)
+void set_unicode_input_mode(unicode_input_mode_t os_target)
 {
   input_mode = os_target;
 }
