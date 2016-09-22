@@ -20,11 +20,11 @@ enum layers {
 #define IS_CA_MULT_ENABLED()    (layer_state & (1 << LR_CSA))
 
 enum macros {
-    // Characters that do not exist in CSA and must be implemented based on unicode support
-    // Note: these are intentionally declared first to be used as indexes in spec_chars below
-    UC_NDSH, // –
-    UC_MDSH, // —
-    UC_ELPS, // …
+    // Characters that do not exist in CSA and must be implemented based on CP1252 support
+    // Note: these are intentionally declared first to be used as indexes in cp1252_chars below
+    CP_NDSH, // –
+    CP_MDSH, // —
+    CP_ELPS, // …
     END_UC, // indicates the last unicode character macro
     // other macros
     M_CSA_SFT, // toggle shift on CSA
@@ -55,14 +55,14 @@ enum macros {
 
 #define CSA(name)   M(M_CSA_##name)     // calls a CSA macro
 
-const uint16_t unicode_chars[] = {
-        [UC_NDSH] = L'–',
-        [UC_MDSH] = L'—',
-        [UC_ELPS] = L'…',
+const uint16_t cp1252_chars[] = {
+        [CP_NDSH] = 0x96,
+        [CP_MDSH] = 0x97,
+        [CP_ELPS] = 0x85,
 };
 
-/* shortcut for unicode character macros */
-#define MUC(name)   M(UC_##name)    // calls a unicode macro
+/* shortcut for CP1252 character macros */
+#define MCP(name)   M(CP_##name)    // calls a unicode macro
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* Basic layer
@@ -205,10 +205,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 [LR_CSA_AGR] = KEYMAP(
         // left hand
-        MUC(NDSH),    MUC(MDSH),  CSA_LESS,  CSA_GRTR,  CSA_LBRC,   CSA_RBRC,  KC_TRNS,
+        MCP(NDSH),    MCP(MDSH),  CSA_LESS,  CSA_GRTR,  CSA_LBRC,   CSA_RBRC,  KC_TRNS,
         KC_TRNS,      CSA_PIPE,   CSA_DACT,  KC_AMPR,   CSA_OE,     CSA_DGRV,  KC_TRNS,
         KC_NO,        CSA_AE,     CSA_UGRV,  CSA_DTRM,  CSA_EURO,   CSA_RQOT,
-        CSA(AGR_SFT), CSA_BSLS,   CSA_LCBR,  CSA_RCBR,  MUC(ELPS),  CSA_TILD,  KC_TRNS,
+        CSA(AGR_SFT), CSA_BSLS,   CSA_LCBR,  CSA_RCBR,  MCP(ELPS),  CSA_TILD,  KC_TRNS,
         KC_TRNS,      KC_TRNS,    KC_TRNS,   KC_TRNS,   KC_TRNS,
 
                                                       KC_TRNS,  KC_TRNS,
@@ -383,19 +383,20 @@ uint16_t hextokeycode(int hex) {
     }
 }
 
-void send_unicode(uint16_t unicode)
+void send_cp1252(uint16_t cp1252)
 {
-    // For more info on how this works per OS, see here: https://en.wikipedia.org/wiki/Unicode_input#Hexadecimal_code_input
-    // Implemented for Windows:
-    // Pressing ALT followed by + followed by the unicode code point in hex.
-    // Requires registry key HKEY_CURRENT_USER\Control Panel\Input Method\EnableHexNumpad set to String 1
+    // For more info on how this works, see first method of http://www.georgehernandez.com/h/xComputers/CharacterSets/Shortcuts.asp#windows
+    // Pressing ALT followed by the CP1252 decimal code point.
     register_code(KC_LALT);
-    register_code(KC_PPLS);
-    unregister_code(KC_PPLS);
+    register_code(KC_P0);
+    unregister_code(KC_P0);
 
-    for (int i = 12; i >= 0; i -= 4) {
-        register_code(hextokeycode((unicode >> i) & 0xF));
-        unregister_code(hextokeycode((unicode >> i) & 0xF));
+    uint16_t remainder = cp1252;
+    for (int i = 100; i > 0; i /= 10) {
+    	int hex = remainder / i;
+    	remainder = remainder % i;
+        register_code(hextokeycode(hex));
+        unregister_code(hextokeycode(hex));
     }
 
     unregister_code(KC_LALT);
@@ -407,7 +408,7 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
     switch(id) {
         case 0 ... END_UC:
             if (record->event.pressed) {
-                send_unicode(unicode_chars[id]);
+                send_cp1252(cp1252_chars[id]);
             }
             break;
         case M_CSA_SFT:
