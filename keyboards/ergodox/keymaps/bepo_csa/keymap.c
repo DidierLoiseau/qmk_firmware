@@ -453,7 +453,8 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
                     case M_SCLN:
                         return MACRO(D(SCLN), END);
                     case M_GRV:
-                        return MACRO(I(75), DOWN(CSA_ALTGR), TYPE(CSA_DCRC), UP(CSA_ALTGR), T(SPACE), END);
+                        send_cp1252(0x60);
+                        break;
                     case M_NBSP:
                         // use weak mod such that pressing another key will not be affected
                         add_weak_mods(MOD_BIT(CSA_ALTGR));
