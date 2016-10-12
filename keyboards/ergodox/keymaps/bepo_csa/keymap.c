@@ -386,15 +386,14 @@ uint16_t hextokeycode(int hex) {
 void send_cp1252(uint16_t cp1252)
 {
     // For more info on how this works, see first method of http://www.georgehernandez.com/h/xComputers/CharacterSets/Shortcuts.asp#windows
-    // Pressing ALT followed by the CP1252 decimal code point.
+    // Pressing ALT followed by 0 and the CP1252 decimal code point.
     register_code(KC_LALT);
-    register_code(KC_P0);
-    unregister_code(KC_P0);
 
     uint16_t remainder = cp1252;
-    for (int i = 100; i > 0; i /= 10) {
-    	int hex = remainder / i;
-    	remainder = remainder % i;
+    // voluntarily starting with i > 256 so that we start with a 0
+    for (int i = 1000; i > 0; i /= 10) {
+        int hex = remainder / i;
+        remainder = remainder % i;
         register_code(hextokeycode(hex));
         unregister_code(hextokeycode(hex));
     }
