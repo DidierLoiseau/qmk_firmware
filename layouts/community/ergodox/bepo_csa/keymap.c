@@ -48,7 +48,7 @@ enum macros {
     // other layer macros
     M_DBL0, // double 0
     M_FNLR, // fn layer
-    M_NMAL, // num+alt
+    M_FNAL, // fn+alt
 };
 
 #define CSA(name)   M(M_CSA_##name)     // calls a CSA macro
@@ -74,7 +74,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |--------+------+------+------+------+------|Enter |           |Enter |------+------+------+------+------+--------|
  * | LShift |   À  |   Y  |   X  |   .  |   K  |      |           |      |   '  |   Q  |   G  |   H  |   F  | RShift |
  * `--------+------+------+------+------+-------------'           `-------------+------+------+------+------+--------'
- *   |LCtrl |  fn  | LGui |numAlt| LAlt |                                       |Alt Gr|   %  |  App |   Ç  | RCtrl|
+ *   |LCtrl |  fn  | LGui |fn+Alt| LAlt |                                       |Alt Gr|   %  |  App |   Ç  | RCtrl|
  *   `----------------------------------'                                       `----------------------------------'
  *                                       ,--------------.       ,-------------.
  *                                       |  Esc  | num  |       | Left |Right |
@@ -92,7 +92,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_TAB,     BP_B,      BP_ECUT, BP_P,      BP_O,     BP_EGRV, KC_BSPC,
         BP_EQL,     BP_A,      BP_U,    BP_I,      BP_E,     BP_COMM,
         KC_LSFT,    BP_AGRV,   BP_Y,    BP_X,      BP_DOT,   BP_K,    KC_ENT,
-        KC_LCTL,    M(M_FNLR), KC_LGUI, M(M_NMAL), KC_LALT,
+        KC_LCTL,    M(M_FNLR), KC_LGUI, M(M_FNAL), KC_LALT,
 
                                                    KC_ESC,   TG(LR_NUMR),
                                                              KC_PGUP,
@@ -482,8 +482,9 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
             layer_invert(LR_NUMR);
             layer_invert(LR_FN);
             break;
-        case M_NMAL:
+        case M_FNAL:
             layer_invert(LR_NUMR);
+            layer_invert(LR_FN);
             if (record->event.pressed) {
                 register_code(KC_LALT);
             } else {

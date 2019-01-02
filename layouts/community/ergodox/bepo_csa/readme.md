@@ -19,7 +19,7 @@ Cette keymap est basée sur la keymap [tm2030](../tm2030/), dont le but est de f
 ## Couche de base
 C'est la couche par défaut, proche du TypeMatrix, avec les différences suivantes:
 - La ligne du haut (les touches `F`) et la colonne de droite sont retirées, les touches correspondantes étant déplacées ailleurs.
-- Les touches situés en bas à gauche sont redisposées dans cet ordre: `Ctrl`, `fn`, `Gui`, `num+Alt`, `Alt`
+- Les touches situés en bas à gauche sont redisposées dans cet ordre: `Ctrl`, `fn`, `Gui`, `fn+Alt`, `Alt`
 - Les touches `shuffle` (`Alt+Tab`) et `desktop` ne sont pas supportés
 - `W` est déplacé à la place de `=`
 - `=` est déplacé sous `Tab` (au lieu d'avoir un grand `Shift`)
@@ -39,7 +39,7 @@ C'est la couche par défaut, proche du TypeMatrix, avec les différences suivant
 |--------+------+------+------+------+------|Enter |           |Enter |------+------+------+------+------+--------|
 | LShift |   À  |   Y  |   X  |   .  |   K  |      |           |      |   '  |   Q  |   G  |   H  |   F  | RShift |
 `--------+------+------+------+------+-------------'           `-------------+------+------+------+------+--------'
-  |LCtrl |  fn  | LGui |numAlt| LAlt |                                       |Alt Gr|   %  |  App |   Ç  | RCtrl|
+  |LCtrl |  fn  | LGui |fn+Alt| LAlt |                                       |Alt Gr|   %  |  App |   Ç  | RCtrl|
   `----------------------------------'                                       `----------------------------------'
                                       ,--------------.       ,-------------.
                                       |  Esc  | num  |       | Left |Right |
@@ -54,7 +54,7 @@ C'est la couche par défaut, proche du TypeMatrix, avec les différences suivant
 
 - Utilisez `num` pour activer/désactiver [la couche numérique](#couche-numérique)
 - Maintenez `fn` pour activer temporairement [les couches numériques et Fn](#couche-fn)
-- Maintenez `numAlt` pour activer temporairement la couche numérique combinée avec `Alt` (facilite l'utilisation des raccourcis tels que `Alt`+`F4`)
+- Maintenez `fn+Alt` pour activer temporairement la couche numérique combinée avec `Alt` (facilite l'utilisation des raccourcis tels que `Alt`+`F4` et `Alt`+`Insert`)
 
 ### Diodes
 Les diodes de l'ErgoDox EZ (côté droit) sont utilisées de la façon suivante :
@@ -86,7 +86,7 @@ L'implémentation actuelle ne fonctionne pas dans toutes les applications, en pa
 
 Il est probable que l'utilisation de la couche CSA ne fonctionne pas correctement dans certains jeux vidéos.
 
-Cette fonctionnalité a été conçue et testée essentiellment pour Windows (7).
+Cette fonctionnalité a été conçue et testée essentiellment pour Windows (7 et 10).
 
 ### Détails techniques
 Techniquement, la couche CSA est en réalité composée de 4 couches servant à émuler la couche de base, les appuis sur `Shift` ou `Alt` et la combinaison des deux.
@@ -105,8 +105,6 @@ Couche numérique proche du TM lorsqu'on active `num`, avec les différences sui
 - Fournit l'accès aux touches `F1` à `F12`, `caps-lock` et `num-lock`.
 
 La couche numérique est indiquée par la [diode](#diodes) de gauche (rouge). Caps-lock est indiqué par la diode de droite (bleue).
-
-La touche `numAlt` de [la couche de base](#couche-de-base) permet d'activer la couche numérique et la touche `Alt` simultanément, afin de faciliter les raccourcis claviers comme `Alt`+`F4`.
 
 ```
 ,--------------------------------------------------.           ,--------------------------------------------------.
@@ -139,6 +137,8 @@ Activée simultanément avec la couche numérique lorsque l'on maintient la touc
 - `insert`, `power`, `sleep`, `wake`, `print screen`, `scroll-lock` et `pause`
 - ~CSA: (dés)activation de [la couche CSA](#couche-csa) sur `$`
 - RESET: rechargement du firmware avec Teensy-Loader (pour les développeurs)
+
+La touche `fn+Alt` de [la couche de base](#couche-de-base) permet d'activer la couche Fn et la touche `Alt` simultanément, afin de faciliter les raccourcis claviers comme `Alt`+`F4` et `Alt`+`Insert`.
 
 ```
 ,--------------------------------------------------.           ,--------------------------------------------------.
