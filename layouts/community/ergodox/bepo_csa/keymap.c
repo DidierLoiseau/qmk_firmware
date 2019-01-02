@@ -62,6 +62,18 @@ const uint16_t unicode_chars[] = {
 /* shortcut for unicode character macros */
 #define MUC(name)   M(UC_##name)    // calls a unicode macro
 
+typedef union {
+  uint32_t raw;
+  struct {
+    bool     csa_enabled :1;
+    // Keep this at the end, set to false on initialization.
+    // If a new field is added, will become true as raw is initialized with 0xFFFFFFFF
+    bool     need_init   :1;
+  };
+} user_config_t;
+
+user_config_t user_config;
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* Basic layer
  *
@@ -495,9 +507,34 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
     return MACRO_NONE;
 };
 
+void eeconfig_init_user(void) {  // EEPROM is getting reset!
+    user_config.raw = 0xFFFFFFFF; // just to make sure we don't keep any garbage (for future usages)
+    user_config.csa_enabled = false;
+    user_config.need_init = false;
+    eeconfig_update_user(user_config.raw);
+}
+
 // Runs just one time when the keyboard initializes.
 void matrix_init_user(void) {
+    user_config.raw = eeconfig_read_user();
+    if (user_config.need_init) {
+        println("Resetting EECONFIG as it is not initialized");
+        eeconfig_init();
+    }
+
+    if (user_config.csa_enabled) {
+        layer_on(LR_CSA);
+    }
 };
+
+uint32_t layer_state_set_user(uint32_t state) {
+    bool csa_enabled = state & (1 << LR_CSA);
+    if (csa_enabled != user_config.csa_enabled) {
+        user_config.csa_enabled = csa_enabled;
+        eeconfig_update_user(user_config.raw);
+    }
+    return state;
+}
 
 // Runs constantly in the background, in a loop.
 void matrix_scan_user(void) {
