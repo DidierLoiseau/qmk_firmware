@@ -17,8 +17,6 @@ enum layers {
     LR_FN, // fn layer
 };
 
-#define IS_CA_MULT_ENABLED()    (layer_state & (1 << LR_CSA))
-
 enum macros {
     // Characters that do not exist in CSA and must be implemented based on unicode support
     // Note: these are intentionally declared first to be used as indexes in spec_chars below
@@ -370,6 +368,14 @@ void release_shift(void) {
     unregister_code(KC_LSHIFT);
 }
 
+void sync_shift_with_csa_layer(void) {
+    if (IS_LAYER_ON(LR_CSA_SFT) && !IS_LAYER_ON(LR_CSA_AGR_SFT)) {
+        hold_shift();
+    } else {
+        release_shift();
+    }
+}
+
 uint16_t hextokeycode(int hex) {
     if (hex == 0x0) {
         return KC_P0;
@@ -410,23 +416,13 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
         case M_CSA_SFT:
             // BÉPO over CSA: toggle shift layer
             layer_invert(LR_CSA_SFT);
-            if (record->event.pressed) {
-                hold_shift();
-            } else {
-                release_shift();
-            }
+            sync_shift_with_csa_layer();
             break;
         case M_CSA_SFT_AGR:
             // BÉPO over CSA: from shift layer, momentary altgr+shift layer
             layer_invert(LR_CSA_AGR);
             layer_invert(LR_CSA_AGR_SFT);
-            if (record->event.pressed) {
-                // shift not needed for LR_CSA_AGR_SFT
-                release_shift();
-            } else {
-                // back to shift layer
-                hold_shift();
-            }
+            sync_shift_with_csa_layer();
             break;
         case M_CSA_AGR_SFT:
             // BÉPO over CSA: from altgr layer, momentary altgr+shift layer
@@ -457,7 +453,7 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
                         return MACRO(D(SPACE), END);
                 }
             } else {
-                hold_shift();
+                sync_shift_with_csa_layer();
                 switch (id) {
                     case M_1 ... M_0:
                         unregister_code(KC_1 + (id - M_1));
@@ -514,7 +510,7 @@ void matrix_scan_user(void) {
         ergodox_right_led_1_on();
     }
     // led 2: BÉPO over Canadian Multilingual
-    if (IS_CA_MULT_ENABLED()) {
+    if (IS_LAYER_ON(LR_CSA)) {
         ergodox_right_led_2_on();
     }
     // led 3: caps lock
