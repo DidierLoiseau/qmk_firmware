@@ -7,6 +7,9 @@
 #include "keymap_extras/keymap_bepo.h"
 #include "keymap_extras/keymap_canadian_multilingual.h"
 
+#define LED_BRIGHTNESS_CUSTOM    1
+#define NUMLK_WARN_LOOP_MS       500
+
 enum layers {
     LR_BASE, // default layer
     LR_CSA, // BÉPO over Canadian Multilingual (CSA)
@@ -49,6 +52,7 @@ enum macros {
     M_DBL0, // double 0
     M_FNLR, // fn layer
     M_FNAL, // fn+alt
+    M_NLWRN, // toggle the "num lock disabled" warning
 };
 
 #define CSA(name)   M(M_CSA_##name)     // calls a CSA macro
@@ -66,6 +70,7 @@ typedef union {
   uint32_t raw;
   struct {
     bool     csa_enabled :1;
+    bool     numlk_warn  :1;
     // Keep this at the end, set to false on initialization.
     // If a new field is added, will become true as raw is initialized with 0xFFFFFFFF
     bool     need_init   :1;
@@ -350,7 +355,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 // MEDIA AND MOUSE
 [LR_FN] = LAYOUT_ergodox(
        TG(LR_CSA), KC_TRNS, KC_TRNS,      KC_TRNS,     KC_TRNS,      KC_TRNS, KC_INS,
-       KC_TRNS,    KC_TRNS, KC_TRNS,      KC_TRNS,     KC_TRNS,      KC_TRNS, KC_VOLU,
+       M(M_NLWRN), KC_TRNS, KC_TRNS,      KC_TRNS,     KC_TRNS,      KC_TRNS, KC_VOLU,
        RESET,      KC_TRNS, KC_TRNS,      KC_CALC,     KC_MAIL,      KC_WHOM,
        KC_TRNS,    KC_APP,  S(KC_DELT),   LCTL(KC_INS),S(KC_INS),    KC_MUTE, KC_VOLD,
        KC_TRNS,    KC_TRNS, KC_TRNS,      KC_TRNS,     KC_TRNS,
@@ -504,6 +509,12 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
                 unregister_code(KC_LALT);
             }
             break;
+        case M_NLWRN:
+            if (record->event.pressed) {
+                user_config.numlk_warn ^= 1;
+                eeconfig_update_user(user_config.raw);
+            }
+            break;
     }
     return MACRO_NONE;
 };
@@ -511,10 +522,12 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
 void eeconfig_init_user(void) {  // EEPROM is getting reset!
     user_config.raw = 0xFFFFFFFF; // just to make sure we don't keep any garbage (for future usages)
     user_config.csa_enabled = false;
+    user_config.numlk_warn = true;
     user_config.need_init = false;
     eeconfig_update_user(user_config.raw);
 }
 
+uint16_t numlk_warn_timer;
 // Runs just one time when the keyboard initializes.
 void matrix_init_user(void) {
     user_config.raw = eeconfig_read_user();
@@ -526,6 +539,9 @@ void matrix_init_user(void) {
     if (user_config.csa_enabled) {
         layer_on(LR_CSA);
     }
+
+    ergodox_led_all_set(LED_BRIGHTNESS_CUSTOM);
+    numlk_warn_timer = timer_read();
 };
 
 uint32_t layer_state_set_user(uint32_t state) {
@@ -546,6 +562,15 @@ void matrix_scan_user(void) {
     ergodox_right_led_3_off();
     // led 1: numeric layer
     if (layer_state & (1 << LR_NUMR)) {
+        if (!user_config.numlk_warn || (host_keyboard_leds() & (1 << USB_LED_NUM_LOCK))) {
+            ergodox_right_led_1_set(LED_BRIGHTNESS_CUSTOM);
+        } else {
+            // animate warning to indicate num lock is disabled
+            uint16_t warn_timer_elapsed = timer_elapsed(numlk_warn_timer) % NUMLK_WARN_LOOP_MS;
+            double warn_angle = 2 * M_PI * warn_timer_elapsed / NUMLK_WARN_LOOP_MS;
+            double new_brightness = LED_BRIGHTNESS_HI * (1 + sin(warn_angle)) / 2;
+            ergodox_right_led_1_set(new_brightness);
+        }
         ergodox_right_led_1_on();
     }
     // led 2: BÉPO over Canadian Multilingual
